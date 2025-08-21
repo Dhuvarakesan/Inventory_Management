@@ -34,7 +34,7 @@ export const authenticateUser = async (req: Request, res: Response) => {
             status: "success",
             code: "200",
             message: "User authenticated successfully.",
-            data: { id: user._id, email: user.email, role: user.role, accessToken: token , refreshToken: refreshToken},
+            data: { id: user._id, accessToken: token , refreshToken: refreshToken,user},
         });
     } catch (error) {
         handleError(res, error);

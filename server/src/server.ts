@@ -14,14 +14,17 @@ const port = process.env.PORT || 3000;
 
 // Middleware
 app.use(helmet()); // Security middleware
-app.use(cors()); // Enable CORS
+app.use(cors({
+  origin: 'http://localhost:8080', // Update to allow requests from the client on port 8080
+  credentials: true, // If you are using cookies or authorization headers
+})); // Enable CORS
 app.use(morgan('tiny')); // Logging middleware
 app.use(express.json()); // Middleware to parse JSON bodies
 
 // MongoDB connection
 connectDB();
 // Routes for public api without authentication
-app.use('/api', publicRoutes);
+app.use('/api',publicRoutes);
 // Routes for protected api with authentication
 app.use('/api', protect, userRoutes);
 
@@ -31,14 +34,14 @@ app.get("/", (req: Request, res: Response) => {
   
     <div style="display: flex; justify-content: center; align-items: center; height:100%; text-align: center; font-family: Arial, sans-serif; background-color: #f8f9fa;">
       <pre style="font-size: 18px; font-weight: bold; color: #333; padding: 20px; border: 1px solid #ddd; border-radius: 10px; background-color: #ffffff; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-🎉 Welcome to the Node.js Express MongoDB API! 🎉
+🎉 Welcome to the Inventory Management Server! 🎉
 --------------------------------------------
 🚀 The server is up and running smoothly!
 🌐 Current Status: ONLINE
 🟢 Port: ${port}
 --------------------------------------------
 Thank you for using our service! 😊
-Happy coding! ✨
+
       </pre>
     </div>
    
@@ -61,7 +64,7 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 // for http localhost without certificate
 app.listen(port, () => {
   console.log(`
-    🎉 **Welcome to the My Express Server!** 🎉
+    🎉 **Welcome to the Inventory Management Server!** 🎉
     --------------------------------------------
     🚀 **Status**: Server is up and running smoothly!`)
   });    
@@ -69,13 +72,13 @@ app.listen(port, () => {
 // for https localhost with certificate
 // https.createServer(options, app).listen(port, () => {
 //   console.log(`
-//     🎉 **Welcome to the My Express Server!** 🎉
+//     🎉 **Welcome to the Inventory Management Server!** 🎉
 //     --------------------------------------------
 //     🚀 **Status**: Server is up and running smoothly!
 //     🌐 **Current Status**: ONLINE
 //     🟢 **Port**: ${port}
 //     --------------------------------------------
 //     Thank you for using our service! 😊
-//     Happy coding! ✨`);
+//     `);
 // }
 // );

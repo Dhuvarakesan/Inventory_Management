@@ -1,16 +1,16 @@
-import { useState, useEffect } from 'react';
-import { useAppDispatch, useAppSelector } from '@/hooks/redux';
-import { fetchUsers, createUser } from '@/store/slices/userSlice';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { useToast } from '@/hooks/use-toast';
-import { UserPlus } from 'lucide-react';
+import { createUser, fetchUsers } from '@/store/slices/userSlice';
 import { format } from 'date-fns';
+import { UserPlus } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 const UserManagement = () => {
   const dispatch = useAppDispatch();
@@ -22,7 +22,7 @@ const UserManagement = () => {
     name: '',
     email: '',
     password: '',
-    role: 'User' as 'Admin' | 'User'
+    role: 'User' as 'admin' | 'User'
   });
 
   useEffect(() => {
@@ -49,9 +49,9 @@ const UserManagement = () => {
     }
   };
 
-  const getRoleBadge = (role: 'Admin' | 'User') => {
-    return role === 'Admin' ? (
-      <Badge variant="default">Admin</Badge>
+  const getRoleBadge = (role: 'admin' | 'User') => {
+    return role === 'admin' ? (
+      <Badge variant="default">admin</Badge>
     ) : (
       <Badge variant="secondary">User</Badge>
     );
@@ -122,14 +122,14 @@ const UserManagement = () => {
                   <Label htmlFor="role">Role</Label>
                   <Select
                     value={formData.role}
-                    onValueChange={(value: 'Admin' | 'User') => setFormData({ ...formData, role: value })}
+                    onValueChange={(value: 'admin' | 'User') => setFormData({ ...formData, role: value })}
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="User">User</SelectItem>
-                      <SelectItem value="Admin">Admin</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

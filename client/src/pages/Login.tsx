@@ -88,7 +88,7 @@ const Login = () => {
               <Package className="h-6 w-6 text-primary-foreground" />
             </div>
             <CardTitle className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              Product Manager
+              Inventory Management
             </CardTitle>
             <CardDescription className="text-muted-foreground">
               Sign in to access your dashboard
@@ -159,9 +159,9 @@ const Login = () => {
               </Button>
             </form>
             
-            <div className="text-center text-sm text-muted-foreground">
+            {/* <div className="text-center text-sm text-muted-foreground">
               Demo credentials: admin@demo.com / password123
-            </div>
+            </div> */}
           </CardContent>
         </Card>
       </div>

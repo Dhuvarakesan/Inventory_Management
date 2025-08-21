@@ -1,32 +1,31 @@
-import { NavLink, useLocation } from "react-router-dom";
-import { 
-  Package, 
-  Users, 
-  History, 
-  PlusCircle, 
-  Upload, 
-  Download,
-  LayoutDashboard,
-  LogOut,
-  FileText
-} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarHeader,
-  SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { logoutUser } from "@/store/slices/authSlice";
-import { useNavigate } from "react-router-dom";
+import {
+  Download,
+  FileText,
+  History,
+  LayoutDashboard,
+  LogOut,
+  Package,
+  PlusCircle,
+  Upload,
+  Users
+} from "lucide-react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 
 const navigationItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -54,7 +53,7 @@ export function AppSidebar() {
   const isActive = (path: string) => currentPath === path;
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     isActive 
-      ? "bg-primary text-primary-foreground font-medium shadow-md" 
+      ? "bg-primary text-primary font-medium shadow-md" 
       : "hover:bg-accent/60 transition-colors";
 
   const handleLogout = () => {
@@ -62,7 +61,7 @@ export function AppSidebar() {
     navigate('/login');
   };
 
-  const isAdmin = user?.role === 'Admin';
+  const isAdmin = user?.role === 'admin';
   const collapsed = state === 'collapsed';
 
   return (

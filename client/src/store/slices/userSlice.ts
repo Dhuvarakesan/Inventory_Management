@@ -1,11 +1,11 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import axios from 'axios';
 
 interface User {
   id: string;
   email: string;
   name: string;
-  role: 'Admin' | 'User';
+  role: 'admin' | 'User';
   createdAt: string;
 }
 

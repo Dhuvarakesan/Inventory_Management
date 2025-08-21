@@ -1,17 +1,19 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import axios from 'axios';
+import { config } from '@/lib/config';
 import { logger } from '@/lib/logger';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import axios from 'axios';
 
 interface User {
   id: string;
   email: string;
   name: string;
-  role: 'Admin' | 'User';
+  role: 'admin' | 'User';
+  _id?: string; // Optional for compatibility with existing user objects
 }
 
 interface AuthState {
   user: User | null;
-  token: string | null;
+  accessToken: string | null;
   isLoading: boolean;
   error: string | null;
   isAuthenticated: boolean;
@@ -19,7 +21,7 @@ interface AuthState {
 
 const initialState: AuthState = {
   user: null,
-  token: null,
+  accessToken: null,
   isLoading: false,
   error: null,
   isAuthenticated: false,
@@ -30,26 +32,34 @@ export const loginUser = createAsyncThunk(
   async (credentials: { email: string; password: string }, { rejectWithValue }) => {
     try {
       logger.info('User login attempt', { email: credentials.email });
-      const response = await axios.post('/api/auth/login', credentials);
-      localStorage.setItem('token', response.data.token);
+      const response = await axios.post(config.apiBaseUrl+'/authenticate', credentials);
+      localStorage.setItem('accessToken', response.data.data.accessToken);
       logger.info('User login successful', { 
         email: credentials.email, 
-        role: response.data.user.role 
+        role: response.data.data.role 
       });
-      return response.data;
-    } catch (error: any) {
-      logger.error('User login failed', { 
-        email: credentials.email, 
-        error: error.response?.data?.message || 'Login failed' 
-      });
-      return rejectWithValue(error.response?.data?.message || 'Login failed');
+      return response.data.data;
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response) {
+        logger.error('User login failed', { 
+          email: credentials.email, 
+          error: error.response.data?.message || 'Login failed' 
+        });
+        return rejectWithValue(error.response.data?.message || 'Login failed');
+      } else {
+        logger.error('User login failed', { 
+          email: credentials.email, 
+          error: 'An unexpected error occurred' 
+        });
+        return rejectWithValue('An unexpected error occurred');
+      }
     }
   }
 );
 
 export const logoutUser = createAsyncThunk('auth/logout', async () => {
   logger.info('User logout');
-  localStorage.removeItem('token');
+  localStorage.removeItem('accessToken');
 });
 
 const authSlice = createSlice({
@@ -59,9 +69,9 @@ const authSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
-    setCredentials: (state, action: PayloadAction<{ user: User; token: string }>) => {
-      state.user = action.payload.user;
-      state.token = action.payload.token;
+    setCredentials: (state, action: PayloadAction<{ user: User; accessToken: string }>) => {
+      state.user = { id: action.payload.user._id,...action.payload.user};
+      state.accessToken = action.payload.accessToken;
       state.isAuthenticated = true;
     },
   },
@@ -74,7 +84,7 @@ const authSlice = createSlice({
       .addCase(loginUser.fulfilled, (state, action) => {
         state.isLoading = false;
         state.user = action.payload.user;
-        state.token = action.payload.token;
+        state.accessToken = action.payload.accessToken;
         state.isAuthenticated = true;
         state.error = null;
       })
@@ -85,7 +95,7 @@ const authSlice = createSlice({
       })
       .addCase(logoutUser.fulfilled, (state) => {
         state.user = null;
-        state.token = null;
+        state.accessToken = null;
         state.isAuthenticated = false;
         state.error = null;
       });
