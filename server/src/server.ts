@@ -1,9 +1,7 @@
 import cors from "cors";
 import dotenv from "dotenv";
 import express, { Express, NextFunction, Request, Response } from "express";
-import fs from "fs";
 import helmet from "helmet";
-import https from "https";
 import morgan from "morgan";
 import { protect } from "./app/middleware/middleware";
 import publicRoutes from "./app/routes/public.routes";
@@ -19,16 +17,7 @@ app.use(helmet()); // Security middleware
 app.use(cors()); // Enable CORS
 app.use(morgan('tiny')); // Logging middleware
 app.use(express.json()); // Middleware to parse JSON bodies
-// const options = {
-//   key: fs.readFileSync('key.pem'),
-//   cert: fs.readFileSync('cert.pem')
-// };
-const options = {
-  // key: fs.readFileSync('localhost.key'),
-  // cert: fs.readFileSync('localhost.crt')
-  key: fs.readFileSync('/etc/letsencrypt/live/www.learning.com/privkey.pem'),
-  cert: fs.readFileSync('/etc/letsencrypt/live/www.learning.com/fullchain.pem'),
-}
+
 // MongoDB connection
 connectDB();
 // Routes for public api without authentication
@@ -70,23 +59,23 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 });
 
 // for http localhost without certificate
-// app.listen(port, () => {
-//   console.log(`
-//     🎉 **Welcome to the My Express Server!** 🎉
-//     --------------------------------------------
-//     🚀 **Status**: Server is up and running smoothly!`)
-//   });    
-
-// for https localhost with certificate
-https.createServer(options, app).listen(port, () => {
+app.listen(port, () => {
   console.log(`
     🎉 **Welcome to the My Express Server!** 🎉
     --------------------------------------------
-    🚀 **Status**: Server is up and running smoothly!
-    🌐 **Current Status**: ONLINE
-    🟢 **Port**: ${port}
-    --------------------------------------------
-    Thank you for using our service! 😊
-    Happy coding! ✨`);
-}
-);
+    🚀 **Status**: Server is up and running smoothly!`)
+  });    
+
+// for https localhost with certificate
+// https.createServer(options, app).listen(port, () => {
+//   console.log(`
+//     🎉 **Welcome to the My Express Server!** 🎉
+//     --------------------------------------------
+//     🚀 **Status**: Server is up and running smoothly!
+//     🌐 **Current Status**: ONLINE
+//     🟢 **Port**: ${port}
+//     --------------------------------------------
+//     Thank you for using our service! 😊
+//     Happy coding! ✨`);
+// }
+// );
