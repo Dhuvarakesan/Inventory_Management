@@ -9,9 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Search, Filter, Plus, Edit, Trash2 } from 'lucide-react';
 import { Product } from '@/store/slices/productSlice';
+import { useNavigate } from 'react-router-dom';
 
 const ProductList = () => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const productsState = useAppSelector((state) => state.products);
   const products = productsState?.products || [];
   const isLoading = productsState?.isLoading;
@@ -76,7 +78,7 @@ const ProductList = () => {
             Manage your product inventory
           </p>
         </div>
-        <Button className="bg-gradient-primary hover:bg-primary-hover">
+        <Button className="bg-gradient-primary hover:bg-primary-hover" onClick={() => navigate('/dashboard/create-product')}>
           <Plus className="mr-2 h-4 w-4" />
           Add Product
         </Button>

@@ -10,6 +10,12 @@ import { setupMockApi } from "./api/mockApi";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import ProductList from "./pages/ProductList";
+import History from "./pages/History";
+import UserManagement from "./pages/UserManagement";
+import ProductCreation from "./pages/ProductCreation";
+import ProductEntry from "./pages/ProductEntry";
+import ProductWithdrawal from "./pages/ProductWithdrawal";
+import Logs from "./pages/Logs";
 import DashboardLayout from "./components/layout/DashboardLayout";
 import NotFound from "./pages/NotFound";
 
@@ -32,7 +38,12 @@ const App = () => (
               <Route path="/dashboard" element={<DashboardLayout />}>
                 <Route index element={<Dashboard />} />
                 <Route path="products" element={<ProductList />} />
-                {/* Future routes: users, history, create-product, etc. */}
+                <Route path="history" element={<History />} />
+                <Route path="users" element={<UserManagement />} />
+                <Route path="create-product" element={<ProductCreation />} />
+                <Route path="product-entry" element={<ProductEntry />} />
+                <Route path="product-withdrawal" element={<ProductWithdrawal />} />
+                <Route path="logs" element={<Logs />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>

@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axios from 'axios';
+import { logger } from '@/lib/logger';
 
 interface User {
   id: string;
@@ -28,16 +29,26 @@ export const loginUser = createAsyncThunk(
   'auth/login',
   async (credentials: { email: string; password: string }, { rejectWithValue }) => {
     try {
+      logger.info('User login attempt', { email: credentials.email });
       const response = await axios.post('/api/auth/login', credentials);
       localStorage.setItem('token', response.data.token);
+      logger.info('User login successful', { 
+        email: credentials.email, 
+        role: response.data.user.role 
+      });
       return response.data;
     } catch (error: any) {
+      logger.error('User login failed', { 
+        email: credentials.email, 
+        error: error.response?.data?.message || 'Login failed' 
+      });
       return rejectWithValue(error.response?.data?.message || 'Login failed');
     }
   }
 );
 
 export const logoutUser = createAsyncThunk('auth/logout', async () => {
+  logger.info('User logout');
   localStorage.removeItem('token');
 });
 

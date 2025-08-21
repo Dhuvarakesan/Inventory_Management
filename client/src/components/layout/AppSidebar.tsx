@@ -7,7 +7,8 @@ import {
   Upload, 
   Download,
   LayoutDashboard,
-  LogOut
+  LogOut,
+  FileText
 } from "lucide-react";
 import {
   Sidebar,
@@ -38,6 +39,7 @@ const adminItems = [
   { title: "Create Product", url: "/dashboard/create-product", icon: PlusCircle },
   { title: "Product Entry", url: "/dashboard/product-entry", icon: Upload },
   { title: "Product Withdrawal", url: "/dashboard/product-withdrawal", icon: Download },
+  { title: "System Logs", url: "/dashboard/logs", icon: FileText },
 ];
 
 export function AppSidebar() {

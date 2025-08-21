@@ -5,6 +5,9 @@ import { combineReducers } from '@reduxjs/toolkit';
 import authSlice from './slices/authSlice';
 import productSlice from './slices/productSlice';
 import userSlice from './slices/userSlice';
+import transactionSlice from './slices/transactionSlice';
+import logSlice from './slices/logSlice';
+import { loggerMiddleware } from '@/lib/loggerMiddleware';
 
 const persistConfig = {
   key: 'root',
@@ -16,6 +19,8 @@ const rootReducer = combineReducers({
   auth: authSlice,
   products: productSlice,
   users: userSlice,
+  transactions: transactionSlice,
+  logs: logSlice,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -27,7 +32,7 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
       },
-    }),
+    }).concat(loggerMiddleware),
 });
 
 export const persistor = persistStore(store);
