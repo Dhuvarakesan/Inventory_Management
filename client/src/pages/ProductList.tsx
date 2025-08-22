@@ -1,14 +1,15 @@
-import { useEffect, useState } from 'react';
-import { useAppDispatch, useAppSelector } from '@/hooks/redux';
-import { fetchProducts, setFilters } from '@/store/slices/productSlice';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import ConfirmationDialog from '@/components/ui/ConfirmationDialog';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Search, Filter, Plus, Edit, Trash2 } from 'lucide-react';
-import { Product } from '@/store/slices/productSlice';
+import { toast } from '@/components/ui/use-toast';
+import { useAppDispatch, useAppSelector } from '@/hooks/redux';
+import { deleteProduct, fetchProducts, Product, setFilters } from '@/store/slices/productSlice';
+import { Edit, Filter, Plus, Search, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const ProductList = () => {
@@ -19,6 +20,8 @@ const ProductList = () => {
   const isLoading = productsState?.isLoading;
   const filters = productsState?.filters || { search: '', category: '', status: '' };
   const [localSearch, setLocalSearch] = useState(filters.search);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
 
   useEffect(() => {
     dispatch(fetchProducts());
@@ -35,6 +38,41 @@ const ProductList = () => {
 
   const handleStatusFilter = (value: string) => {
     dispatch(setFilters({ status: value === 'all' ? '' : value }));
+  };
+
+  const handleDeleteClick = (id: string) => {
+    setSelectedProductId(id);
+    setIsDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (selectedProductId) {
+      try {
+        await dispatch(deleteProduct(selectedProductId)).unwrap();
+        toast({
+          title: 'Product deleted successfully',
+          description: 'The product has been removed from the inventory.',
+        });
+      } catch (error) {
+        toast({
+          title: 'Error deleting product',
+          description: typeof error === 'string' ? error : (error instanceof Error ? error.message : 'An unknown error occurred'),
+          variant: 'destructive',
+        });
+      } finally {
+        setIsDialogOpen(false);
+        setSelectedProductId(null);
+      }
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setIsDialogOpen(false);
+    setSelectedProductId(null);
+  };
+
+  const handleEditClick = (id: string) => {
+    navigate(`/dashboard/edit-product/${id}`);
   };
 
   const getStatusBadge = (status: Product['status']) => {
@@ -58,8 +96,8 @@ const ProductList = () => {
   };
 
   const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(filters.search.toLowerCase()) ||
-                          product.category.toLowerCase().includes(filters.search.toLowerCase());
+    const matchesSearch = (product.name?.toLowerCase() || '').includes(filters.search.toLowerCase()) ||
+                          (product.category?.toLowerCase() || '').includes(filters.search.toLowerCase());
     const matchesCategory = !filters.category || product.category === filters.category;
     const matchesStatus = !filters.status || product.status === filters.status;
     
@@ -166,10 +204,20 @@ const ProductList = () => {
                       <TableCell>{getStatusBadge(product.status)}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end space-x-2">
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => handleEditClick(product.id)}
+                          >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive hover:text-destructive"
+                            onClick={() => handleDeleteClick(product.id)}
+                          >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
@@ -182,6 +230,14 @@ const ProductList = () => {
           </div>
         </CardContent>
       </Card>
+
+      <ConfirmationDialog
+        isOpen={isDialogOpen}
+        title="Delete Product"
+        description="Are you sure you want to delete this product? This action cannot be undone."
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+      />
     </div>
   );
 };

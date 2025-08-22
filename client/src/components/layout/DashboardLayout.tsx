@@ -1,12 +1,30 @@
-import { Outlet } from "react-router-dom";
+import ConfirmationDialog from "@/components/ui/ConfirmationDialog";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "./AppSidebar";
 import { useAppSelector } from "@/hooks/redux";
-import { Navigate } from "react-router-dom";
+import { useSessionManager } from "@/hooks/useSessionManager";
+import { useState } from "react";
+import { Navigate, Outlet } from "react-router-dom";
+import { AppSidebar } from "./AppSidebar";
 
 const DashboardLayout = () => {
   const auth = useAppSelector((state) => state.auth);
   const isAuthenticated = auth?.isAuthenticated;
+
+  const { isDialogVisible, onConfirm, onCancel } = useSessionManager();
+  const [isLogoutDialogVisible, setLogoutDialogVisible] = useState(false); // State for logout dialog
+
+  const handleLogout = () => {
+    setLogoutDialogVisible(true);
+  };
+
+  const confirmLogout = () => {
+    onCancel(); // Call the logout function
+    setLogoutDialogVisible(false);
+  };
+
+  const cancelLogout = () => {
+    setLogoutDialogVisible(false);
+  };
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
@@ -21,7 +39,9 @@ const DashboardLayout = () => {
             <SidebarTrigger className="hover:bg-accent rounded-md p-2 transition-colors" />
             <div className="flex-1" />
             <div className="flex items-center space-x-4">
-              {/* Future: User menu, notifications, etc. */}
+              <button onClick={handleLogout} className="text-red-500">
+                Logout
+              </button>
             </div>
           </header>
           <div className="flex-1 p-6">
@@ -29,6 +49,24 @@ const DashboardLayout = () => {
           </div>
         </main>
       </div>
+      {isDialogVisible && (
+        <ConfirmationDialog
+          isOpen={isDialogVisible}
+          title="Session Expiring"
+          description="Your session is about to expire. Do you want to extend it?"
+          onConfirm={onConfirm}
+          onCancel={onCancel}
+        />
+      )}
+      {isLogoutDialogVisible && (
+        <ConfirmationDialog
+          isOpen={isLogoutDialogVisible}
+          title="Confirm Logout"
+          description="Are you sure you want to logout?"
+          onConfirm={confirmLogout}
+          onCancel={cancelLogout}
+        />
+      )}
     </SidebarProvider>
   );
 };

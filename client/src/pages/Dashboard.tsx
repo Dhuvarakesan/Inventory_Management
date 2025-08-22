@@ -1,12 +1,14 @@
-import { useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { fetchProducts } from '@/store/slices/productSlice';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, TrendingUp, AlertTriangle, Users } from 'lucide-react';
+import { fetchTransactions } from '@/store/slices/transactionSlice';
+import { AlertTriangle, Package, TrendingUp, Users } from 'lucide-react';
+import { useEffect } from 'react';
 
 const Dashboard = () => {
   const dispatch = useAppDispatch();
   const products = useAppSelector((state) => state.products);
+  const transactions = useAppSelector((state) => state.transactions.transactions);
   const auth = useAppSelector((state) => state.auth);
   const isLoading = products?.isLoading;
   const productList = products?.products || [];
@@ -14,12 +16,18 @@ const Dashboard = () => {
 
   useEffect(() => {
     dispatch(fetchProducts());
+    dispatch(fetchTransactions());
   }, [dispatch]);
 
   const totalProducts = productList.length;
   const lowStockProducts = productList.filter(p => p.quantity < 10).length;
   const activeProducts = productList.filter(p => p.status === 'Active').length;
   const inactiveProducts = productList.filter(p => p.status === 'Inactive').length;
+
+  const recentTransactions = transactions
+    .slice()
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+    .slice(0, 10);
 
   const stats = [
     {
@@ -124,11 +132,26 @@ const Dashboard = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            <Package className="mx-auto h-12 w-12 mb-4 opacity-50" />
-            <p>No recent activity</p>
-            <p className="text-sm">Product transactions will appear here</p>
-          </div>
+          {recentTransactions.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Package className="mx-auto h-12 w-12 mb-4 opacity-50" />
+              <p>No recent activity</p>
+              <p className="text-sm">Product transactions will appear here</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {recentTransactions.map((transaction) => (
+                <div key={transaction.id} className="flex justify-between items-center">
+                  <span className="font-medium">
+                    {transaction.productName} ({transaction.action})
+                  </span>
+                  <span className="text-muted-foreground text-sm">
+                    {new Date(transaction.timestamp).toLocaleString()}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

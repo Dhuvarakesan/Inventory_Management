@@ -1,26 +1,27 @@
-import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Provider } from "react-redux";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { PersistGate } from "redux-persist/integration/react";
-import { store, persistor } from "./store/store";
-import { setupMockApi } from "./api/mockApi";
-import Login from "./pages/Login";
+import { persistor, store } from "./store/store";
+// import { setupMockApi } from "./api/mockApi";
+import DashboardLayout from "./components/layout/DashboardLayout";
 import Dashboard from "./pages/Dashboard";
-import ProductList from "./pages/ProductList";
+import EditProduct from "./pages/EditProduct";
 import History from "./pages/History";
-import UserManagement from "./pages/UserManagement";
+import Login from "./pages/Login";
+import Logs from "./pages/Logs";
+import NotFound from "./pages/NotFound";
 import ProductCreation from "./pages/ProductCreation";
 import ProductEntry from "./pages/ProductEntry";
+import ProductList from "./pages/ProductList";
 import ProductWithdrawal from "./pages/ProductWithdrawal";
-import Logs from "./pages/Logs";
-import DashboardLayout from "./components/layout/DashboardLayout";
-import NotFound from "./pages/NotFound";
+import UserManagement from "./pages/UserManagement";
 
 // Setup mock API
-setupMockApi();
+// setupMockApi();
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,7 @@ const App = () => (
                 <Route path="product-entry" element={<ProductEntry />} />
                 <Route path="product-withdrawal" element={<ProductWithdrawal />} />
                 <Route path="logs" element={<Logs />} />
+                <Route path="edit-product/:id" element={<EditProduct />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
