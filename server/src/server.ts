@@ -4,7 +4,9 @@ import express, { Express, NextFunction, Request, Response } from "express";
 import helmet from "helmet";
 import morgan from "morgan";
 import { protect } from "./app/middleware/middleware";
+import productRoutes from './app/routes/product.routes';
 import publicRoutes from "./app/routes/public.routes";
+import transactionRoutes from './app/routes/transaction.routes'; // Import transaction routes
 import userRoutes from './app/routes/users.routes'; // Import the routes
 import connectDB from "./config/db";
 dotenv.config();
@@ -15,19 +17,23 @@ const port = process.env.PORT || 3000;
 // Middleware
 app.use(helmet()); // Security middleware
 app.use(cors({
-  origin: 'http://localhost:8080', // Update to allow requests from the client on port 8080
+  origin: process.env.ALLOWED_REGION ||'http://localhost:8080', // Update to allow requests from the client on port 8080
   credentials: true, // If you are using cookies or authorization headers
 })); // Enable CORS
-app.use(morgan('tiny')); // Logging middleware
+app.use(morgan('common')); // Logging middleware
 app.use(express.json()); // Middleware to parse JSON bodies
 
 // MongoDB connection
 connectDB();
 // Routes for public api without authentication
-app.use('/api',publicRoutes);
+app.use(publicRoutes);
 // Routes for protected api with authentication
-app.use('/api', protect, userRoutes);
-
+app.use(protect, userRoutes);
+// app.use(userRoutes);
+// Add product routes
+app.use('/products', protect, productRoutes);
+// Add transaction routes
+app.use('/transactions', protect,transactionRoutes);
 // Root route
 app.get("/", (req: Request, res: Response) => {
   res.send(`

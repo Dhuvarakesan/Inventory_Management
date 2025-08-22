@@ -1,8 +1,8 @@
+import CryptoJS from 'crypto-js';
 import { Request, Response } from 'express';
 import User from '../models/users.modles';
 
-
-import { CustomError } from '../errorHandeling/customError';
+import { secretKey } from '../../config/config';
 import handleError from '../errorHandeling/handelError'; // Import the handleError function
 
 // Get all users
@@ -32,10 +32,15 @@ export const createUser = async (req: Request, res: Response) => {
       status: "success",
       code: "201",
       message: "User created successfully.",
-      data: savedUser.safeData
+      data: savedUser,
     });
   } catch (error) {
-    handleError(res, error);
+    res.status(500).json({
+      status: "error",
+      code: "500",
+      message: "Failed to create user.",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
   }
 };
 
@@ -45,24 +50,37 @@ export const updateUser = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { name, email, password, role, isActive } = req.body;
 
-    const updatedUser = await User.findByIdAndUpdate(
-      id,
-      { name, email, password, role, isActive },
-      { new: true, runValidators: true }
-    );
+    const updateData: any = { name, email, role, isActive };
+
+    // Encrypt the password if provided
+    if (password) {
+      updateData.password = CryptoJS.AES.encrypt(password, secretKey).toString();
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
 
     if (!updatedUser) {
-      throw new CustomError("User not found.", 404, "USER_NOT_FOUND", "The user with the specified ID does not exist.");
+      return res.status(404).json({
+        status: "error",
+        code: "404",
+        message: "User not found.",
+        error: `No user found with ID: ${id}`,
+      });
     }
 
     res.status(200).json({
       status: "success",
       code: "200",
       message: "User updated successfully.",
-      data: updatedUser.safeData
+      data: updatedUser,
     });
   } catch (error) {
-    handleError(res, error);
+    res.status(500).json({
+      status: "error",
+      code: "500",
+      message: "Failed to update user.",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
   }
 };
 
@@ -74,17 +92,27 @@ export const deleteUser = async (req: Request, res: Response) => {
     const deletedUser = await User.findByIdAndDelete(id);
 
     if (!deletedUser) {
-      throw new CustomError("User not found.", 404, "USER_NOT_FOUND", "The user with the specified ID does not exist.");
+      return res.status(404).json({
+        status: "error",
+        code: "404",
+        message: "User not found.",
+        error: `No user found with ID: ${id}`,
+      });
     }
 
     res.status(200).json({
       status: "success",
       code: "200",
       message: "User deleted successfully.",
-      data: deletedUser.safeData
+      data: deletedUser,
     });
   } catch (error) {
-    handleError(res, error);
+    res.status(500).json({
+      status: "error",
+      code: "500",
+      message: "Failed to delete user.",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
   }
 };
 

@@ -1,5 +1,6 @@
-import bcrypt from 'bcryptjs';
+import CryptoJS from 'crypto-js';
 import { Document, model, Schema, Types } from 'mongoose';
+import { secretKey } from '../../config/config';
 
 // 1. Define the interface for the User document
 interface IUser extends Document {
@@ -10,7 +11,8 @@ interface IUser extends Document {
   isActive: boolean;
   createdAt?: Date;
   updatedAt?: Date;
-  comparePassword(enteredPassword: string): Promise<boolean>;
+  comparePassword(enteredPassword: string): boolean;
+  decryptPassword(): string;
   safeData: IUserSafeData; // Virtual property for returning user data without password
 }
 
@@ -59,28 +61,35 @@ const userSchema: Schema<IUser> = new Schema<IUser>({
   timestamps: true // Automatically adds createdAt and updatedAt fields
 });
 
-// 4. Pre-save hook to hash password before saving
-userSchema.pre<IUser>('save', async function(next) {
+
+
+// 4. Pre-save hook to encrypt password before saving
+userSchema.pre<IUser>('save', function(next) {
   const user = this;
 
-  // Only hash the password if it's new or being modified
+  // Only encrypt the password if it's new or being modified
   if (!user.isModified('password')) return next();
 
   try {
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(user.password, salt);
+    user.password = CryptoJS.AES.encrypt(user.password, secretKey).toString();
     next();
   } catch (error: any) {
     next(error);
   }
 });
 
-// 5. Instance method to compare entered password with hashed password
-userSchema.methods.comparePassword = async function(this: IUser, enteredPassword: string): Promise<boolean> {
-  return await bcrypt.compare(enteredPassword, this.password);
+// 5. Instance method to compare entered password with encrypted password
+userSchema.methods.comparePassword = function(this: IUser, enteredPassword: string): boolean {
+  const decryptedPassword = CryptoJS.AES.decrypt(this.password, secretKey).toString(CryptoJS.enc.Utf8);
+  return enteredPassword === decryptedPassword;
 };
 
-// 6. Virtual property to return user data without password
+// 6. Instance method to decrypt password
+userSchema.methods.decryptPassword = function(this: IUser): string {
+  return CryptoJS.AES.decrypt(this.password, secretKey).toString(CryptoJS.enc.Utf8);
+};
+
+// 7. Virtual property to return user data without password
 userSchema.virtual('safeData').get(function(this: IUser): IUserSafeData {
   return {
     _id: (this._id as Types.ObjectId).toString(),
@@ -93,6 +102,6 @@ userSchema.virtual('safeData').get(function(this: IUser): IUserSafeData {
   };
 });
 
-// 7. Create and export the User model
+// 8. Create and export the User model
 const User = model<IUser>('User', userSchema);
 export default User;

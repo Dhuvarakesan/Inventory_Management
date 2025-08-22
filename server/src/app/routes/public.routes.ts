@@ -3,6 +3,6 @@ import { authenticateUser, refreshAccessToken } from "../controllers/authenticat
 
 const publicRoutes = Router();
 publicRoutes.use("/authenticate", authenticateUser);
-publicRoutes.post("/refreshToken", refreshAccessToken);
+publicRoutes.post("/refresh-token", refreshAccessToken);
 
 export default publicRoutes;
