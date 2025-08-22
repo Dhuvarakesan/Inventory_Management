@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import ConfirmationDialog from '@/components/ui/ConfirmationDialog';
 import {
   Sidebar,
   SidebarContent,
@@ -25,6 +26,7 @@ import {
   Upload,
   Users
 } from "lucide-react";
+import { useState } from 'react';
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 
 const navigationItems = [
@@ -56,16 +58,31 @@ export function AppSidebar() {
       ? "bg-primary text-primary font-medium shadow-md" 
       : "hover:bg-accent/60 transition-colors";
 
-  const handleLogout = () => {
+  const [isLogoutDialogVisible, setLogoutDialogVisible] = useState(false);
+
+  const handleLogoutClick = () => {
+    setLogoutDialogVisible(true);
+  };
+
+  const confirmLogout = () => {
     dispatch(logoutUser());
     navigate('/login');
+    setLogoutDialogVisible(false);
+  };
+
+  const cancelLogout = () => {
+    setLogoutDialogVisible(false);
   };
 
   const isAdmin = user?.role === 'admin';
   const collapsed = state === 'collapsed';
 
   return (
-    <Sidebar className={`${collapsed ? "w-16" : "w-64"} border-r bg-card/50 backdrop-blur-sm`}>
+    <Sidebar
+      className={`${
+        collapsed ? "w-16" : "w-64"
+      } border-r bg-card/50 backdrop-blur-sm`}
+    >
       <SidebarHeader className="border-b border-border/50 p-4">
         {!collapsed && (
           <div className="flex items-center space-x-2">
@@ -73,8 +90,10 @@ export function AppSidebar() {
               <Package className="h-4 w-4 text-primary-foreground" />
             </div>
             <div>
-              <h2 className="font-semibold text-foreground">Product Manager</h2>
-              <p className="text-xs text-muted-foreground">{user?.role}</p>
+              <h2 className="font-semibold text-foreground">
+                Inventory Management
+              </h2>
+              <p className="text-xs text-muted-foreground capitalize">{user?.role}</p>
             </div>
           </div>
         )}
@@ -87,7 +106,9 @@ export function AppSidebar() {
 
       <SidebarContent className="py-4">
         <SidebarGroup>
-          <SidebarGroupLabel className={collapsed ? "sr-only" : ""}>Main</SidebarGroupLabel>
+          <SidebarGroupLabel className={collapsed ? "sr-only" : ""}>
+            Main
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navigationItems.map((item) => (
@@ -106,7 +127,9 @@ export function AppSidebar() {
 
         {isAdmin && (
           <SidebarGroup>
-            <SidebarGroupLabel className={collapsed ? "sr-only" : ""}>Admin</SidebarGroupLabel>
+            <SidebarGroupLabel className={collapsed ? "sr-only" : ""}>
+              Admin
+            </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {adminItems.map((item) => (
@@ -129,13 +152,22 @@ export function AppSidebar() {
         <Button
           variant="ghost"
           size={collapsed ? "sm" : "default"}
-          onClick={handleLogout}
+          onClick={handleLogoutClick}
           className="w-full justify-start text-muted-foreground hover:text-foreground hover:bg-destructive/10"
         >
           <LogOut className="h-4 w-4" />
           {!collapsed && <span className="ml-2">Logout</span>}
         </Button>
       </SidebarFooter>
+      {isLogoutDialogVisible && (
+        <ConfirmationDialog
+          isOpen={isLogoutDialogVisible}
+          title="Confirm Logout"
+          description="Are you sure you want to logout?"
+          onConfirm={confirmLogout}
+          onCancel={cancelLogout}
+        />
+      )}
     </Sidebar>
   );
 }

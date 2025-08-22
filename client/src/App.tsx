@@ -9,6 +9,7 @@ import { persistor, store } from "./store/store";
 // import { setupMockApi } from "./api/mockApi";
 import DashboardLayout from "./components/layout/DashboardLayout";
 import Dashboard from "./pages/Dashboard";
+import EditProduct from "./pages/EditProduct";
 import History from "./pages/History";
 import Login from "./pages/Login";
 import Logs from "./pages/Logs";
@@ -44,6 +45,7 @@ const App = () => (
                 <Route path="product-entry" element={<ProductEntry />} />
                 <Route path="product-withdrawal" element={<ProductWithdrawal />} />
                 <Route path="logs" element={<Logs />} />
+                <Route path="edit-product/:id" element={<EditProduct />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>

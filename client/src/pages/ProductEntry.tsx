@@ -1,15 +1,14 @@
-import { useState, useEffect } from 'react';
-import { useAppDispatch, useAppSelector } from '@/hooks/redux';
-import { fetchProducts, updateProduct } from '@/store/slices/productSlice';
-import { createTransaction } from '@/store/slices/transactionSlice';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { useAppDispatch, useAppSelector } from '@/hooks/redux';
 import { useToast } from '@/hooks/use-toast';
-import { TrendingUp, Package } from 'lucide-react';
+import { addStock, fetchProducts } from '@/store/slices/productSlice';
+import { Package, TrendingUp } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 const ProductEntry = () => {
   const dispatch = useAppDispatch();
@@ -33,38 +32,24 @@ const ProductEntry = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!selectedProduct || !user) return;
-    
-    setIsSubmitting(true);
-    
-    try {
-      const newQuantity = selectedProduct.quantity + formData.quantity;
-      
-      // Update product stock
-      await dispatch(updateProduct({
-        id: selectedProduct.id,
-        quantity: newQuantity
-      })).unwrap();
 
-      // Create transaction record
-      await dispatch(createTransaction({
-        productId: selectedProduct.id,
-        productName: selectedProduct.name,
-        type: 'entry',
+    if (!selectedProduct || !user) return;
+
+    setIsSubmitting(true);
+
+    try {
+      // Use the new `addStock` thunk
+      await dispatch(addStock({
+        id: selectedProduct.id,
         quantity: formData.quantity,
-        previousStock: selectedProduct.quantity,
-        newStock: newQuantity,
-        reason: formData.reason,
-        userId: user.id,
-        userName: user.name
+        reason:formData.reason
       })).unwrap();
 
       toast({
         title: "Stock entry successful",
-        description: `Added ${formData.quantity} units to ${selectedProduct.name}. New stock: ${newQuantity}`,
+        description: `Added ${formData.quantity} units to ${selectedProduct.name}.`,
       });
-      
+
       setFormData({ productId: '', quantity: 0, reason: '' });
     } catch (error) {
       toast({
@@ -104,12 +89,13 @@ const ProductEntry = () => {
               <div>
                 <Label htmlFor="product">Select Product</Label>
                 <Select
-                  value={formData.productId}
-                  onValueChange={(value) => setFormData({ ...formData, productId: value })}
-                  required
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, productId: value })
+                  }
+                  defaultValue={formData.productId}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Choose a product" />
+                    <SelectValue placeholder="Select a product" />
                   </SelectTrigger>
                   <SelectContent>
                     {products.map((product) => (
@@ -158,18 +144,24 @@ const ProductEntry = () => {
                   min="1"
                   placeholder="Enter quantity to add"
                   value={formData.quantity}
-                  onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) || 0 })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      quantity: Number(e.target.value),
+                    })
+                  }
                   required
                 />
               </div>
-
               <div>
-                <Label htmlFor="reason">Reason (Optional)</Label>
+                <Label htmlFor="reason">Reason</Label>
                 <Textarea
                   id="reason"
-                  placeholder="Enter reason for stock entry (e.g., 'New shipment received', 'Inventory correction')"
+                  placeholder="Enter reason for stock entry"
                   value={formData.reason}
-                  onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, reason: e.target.value })
+                  }
                 />
               </div>
 

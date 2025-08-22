@@ -1,5 +1,5 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { LogEntry, LogLevel } from '@/lib/logger';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface LogState {
   logs: LogEntry[];
@@ -50,3 +50,9 @@ const logSlice = createSlice({
 
 export const { addLog, setLogs, clearLogs, setFilters } = logSlice.actions;
 export default logSlice.reducer;
+
+// Example API call using the custom Axios instance
+// const fetchLogs = async () => {
+//   const response = await axiosInstance.get('/logs');
+//   // handle response
+// };

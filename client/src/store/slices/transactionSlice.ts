@@ -1,18 +1,19 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import axiosInstance from '@/lib/axiosInstance';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import axios from 'axios';
 
 export interface Transaction {
   id: string;
   productId: string;
   productName: string;
-  type: 'entry' | 'withdrawal';
+  action: 'addStock' | 'withdrawStock';
   quantity: number;
   previousStock: number;
   newStock: number;
   reason?: string;
-  userId: string;
-  userName: string;
-  createdAt: string;
+  userid: string;
+  username: string;
+  timestamp: string;
 }
 
 interface TransactionState {
@@ -27,26 +28,48 @@ const initialState: TransactionState = {
   error: null,
 };
 
+
 export const fetchTransactions = createAsyncThunk(
   'transactions/fetchTransactions',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get('/api/transactions');
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch transactions');
+      const response = await axiosInstance.get('/transactions');
+      return response.data.data;
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        return rejectWithValue(error.response?.data?.message || 'Failed to fetch transactions');
+      }
+      return rejectWithValue('An unexpected error occurred');
     }
   }
 );
 
-export const createTransaction = createAsyncThunk(
-  'transactions/createTransaction',
-  async (transactionData: Omit<Transaction, 'id' | 'createdAt'>, { rejectWithValue }) => {
+export const fetchTransactionHistory = createAsyncThunk(
+  'transactions/fetchHistory',
+  async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.post('/api/transactions', transactionData);
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to create transaction');
+      const response = await axiosInstance.get('/transactions/history');
+      return response.data.data;
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        return rejectWithValue(error.response?.data?.message || 'Failed to fetch transaction history');
+      }
+      return rejectWithValue('An unexpected error occurred');
+    }
+  }
+);
+
+export const fetchSystemLogs = createAsyncThunk(
+  'transactions/fetchSystemLogs',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get('/transactions/system-logs');
+      return response.data.data;
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        return rejectWithValue(error.response?.data?.message || 'Failed to fetch system logs');
+      }
+      return rejectWithValue('An unexpected error occurred');
     }
   }
 );
@@ -73,8 +96,29 @@ const transactionSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload as string;
       })
-      .addCase(createTransaction.fulfilled, (state, action) => {
-        state.transactions.unshift(action.payload);
+      .addCase(fetchTransactionHistory.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchTransactionHistory.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.transactions = action.payload;
+      })
+      .addCase(fetchTransactionHistory.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(fetchSystemLogs.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchSystemLogs.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.transactions = action.payload;
+      })
+      .addCase(fetchSystemLogs.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
       });
   },
 });
